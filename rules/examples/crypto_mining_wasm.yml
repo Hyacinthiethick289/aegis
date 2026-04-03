@@ -1,0 +1,10 @@
+id: "COMMUNITY-MINING-002"
+name: "WebAssembly crypto mining module"
+description: "Detects loading of WebAssembly modules associated with browser-based cryptocurrency mining (CryptoNight, RandomX)"
+severity: critical
+category: code_execution
+pattern: "(?:WebAssembly\\.instantiate|wasm).*(?:cryptonight|randomx|cn_hash|monero)"
+file_pattern: "*.js"
+exclude_paths:
+  - "node_modules/"
+  - "test/"

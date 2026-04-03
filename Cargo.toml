@@ -1,0 +1,63 @@
+[package]
+name = "aegis-scan"
+version = "0.1.0"
+edition = "2021"
+description = "Supply chain security CLI for npm — detect malicious packages before installing"
+license = "MIT"
+repository = "https://github.com/z8run/aegis"
+readme = "README.md"
+homepage = "https://crates.io/crates/aegis-scan"
+keywords = ["npm", "security", "supply-chain", "vulnerability", "static-analysis"]
+categories = ["command-line-utilities", "development-tools"]
+
+[[bin]]
+name = "aegis-scan"
+path = "src/main.rs"
+
+[dependencies]
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# HTTP
+reqwest = { version = "0.12", features = ["json"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Tarball extraction
+flate2 = "1"
+tar = "0.4"
+
+# Terminal output
+colored = "2"
+
+# Error handling
+anyhow = "1"
+thiserror = "2"
+
+# Regex for pattern matching
+regex = "1"
+
+# Temp directories for extraction
+tempfile = "3"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Tree-sitter for AST analysis
+tree-sitter = "0.24"
+tree-sitter-javascript = "0.23"
+
+# YAML for community rules
+serde_yaml = "0.9"
+
+# Glob for rule file discovery
+glob = "0.3"
+
+# Date/time parsing
+chrono = { version = "0.4", features = ["serde"] }

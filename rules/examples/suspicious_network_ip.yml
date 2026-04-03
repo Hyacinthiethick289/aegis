@@ -1,0 +1,13 @@
+id: "COMMUNITY-NET-002"
+name: "IP address with non-standard port"
+description: "Detects hardcoded IP address literals combined with non-standard ports, a common indicator of command-and-control servers"
+severity: medium
+category: network_access
+pattern: "(?:https?://)?\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5}"
+file_pattern: "*.js"
+exclude_paths:
+  - "node_modules/"
+  - "test/"
+  - "*.test.js"
+  - "*.min.js"
+  - "*.config.js"

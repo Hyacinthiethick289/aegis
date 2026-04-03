@@ -1,0 +1,10 @@
+id: "COMMUNITY-MINING-003"
+name: "Mining pool domain or API reference"
+description: "Detects hardcoded references to known mining pool domains or mining software identifiers"
+severity: high
+category: suspicious
+pattern: "(?:minergate|coinhive|coin-hive|nanopool\\.org|supportxmr\\.com|xmrpool\\.eu|hashvault\\.pro|minexmr|xmrig)"
+exclude_paths:
+  - "node_modules/"
+  - "test/"
+  - "*.md"

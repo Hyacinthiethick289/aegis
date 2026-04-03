@@ -1,0 +1,12 @@
+id: "COMMUNITY-NET-001"
+name: "Raw TCP socket with dynamic host"
+description: "Detects creation of raw TCP sockets that connect to a host provided via a variable, which may indicate C2 communication"
+severity: high
+category: network_access
+pattern: "net\\.(?:createConnection|connect)\\s*\\(\\s*(?:\\{[^}]*host\\s*:|[a-zA-Z_$])"
+file_pattern: "*.js"
+exclude_paths:
+  - "node_modules/"
+  - "test/"
+  - "*.test.js"
+  - "*.spec.js"

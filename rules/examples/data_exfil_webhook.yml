@@ -1,0 +1,11 @@
+id: "COMMUNITY-EXFIL-003"
+name: "Webhook or paste service exfiltration"
+description: "Detects HTTP requests to known paste services and webhook endpoints often used for data exfiltration"
+severity: high
+category: network_access
+pattern: "(?:fetch|axios|request|https?\\.request|got)\\s*\\([^)]*(?:pastebin\\.com|webhook\\.site|requestbin|hookbin|pipedream|discord\\.com/api/webhooks|burpcollaborator)"
+file_pattern: "*.js"
+exclude_paths:
+  - "node_modules/"
+  - "test/"
+  - "*.test.js"

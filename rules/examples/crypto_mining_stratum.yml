@@ -1,0 +1,12 @@
+id: "COMMUNITY-MINING-001"
+name: "Stratum mining protocol connection"
+description: "Detects references to the stratum mining protocol, commonly used to connect to cryptocurrency mining pools"
+severity: critical
+category: network_access
+pattern: "stratum\\+tcp://[^\\s'\"]*"
+file_pattern: "*.js"
+exclude_paths:
+  - "node_modules/"
+  - "test/"
+  - "*.test.js"
+  - "*.spec.js"

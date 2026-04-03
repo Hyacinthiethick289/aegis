@@ -1,0 +1,11 @@
+id: "COMMUNITY-NET-003"
+name: "Fetch with encoded or obfuscated URL"
+description: "Detects network requests where the URL is constructed from encoded strings, suggesting the destination is intentionally hidden"
+severity: high
+category: network_access
+pattern: "(?:fetch|axios|https?\\.request|got|request)\\s*\\(\\s*(?:atob|Buffer\\.from|decodeURIComponent)\\s*\\("
+file_pattern: "*.js"
+exclude_paths:
+  - "node_modules/"
+  - "test/"
+  - "*.test.js"

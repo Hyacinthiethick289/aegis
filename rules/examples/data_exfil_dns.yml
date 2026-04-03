@@ -1,0 +1,11 @@
+id: "COMMUNITY-EXFIL-001"
+name: "DNS-based data exfiltration"
+description: "Detects patterns where data is encoded into DNS queries, a common technique for exfiltrating data through firewalls"
+severity: critical
+category: network_access
+pattern: "dns\\.(?:resolve|lookup)\\s*\\(.*(?:encode|Buffer\\.from|btoa|toString\\()"
+file_pattern: "*.js"
+exclude_paths:
+  - "node_modules/"
+  - "test/"
+  - "*.test.js"
