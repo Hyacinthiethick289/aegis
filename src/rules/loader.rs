@@ -93,6 +93,11 @@ file_pattern: "*.js"
 exclude_paths:
   - "node_modules/"
   - "*.min.js"
+  - "dist/"
+  - "build/"
+  - "esm/"
+  - "cjs/"
+  - "umd/"
 "#,
         // 2. Function constructor with string concatenation
         r#"
@@ -106,6 +111,11 @@ file_pattern: "*.js"
 exclude_paths:
   - "node_modules/"
   - "*.min.js"
+  - "dist/"
+  - "build/"
+  - "esm/"
+  - "cjs/"
+  - "umd/"
 "#,
         // 3. child_process with variable command
         r#"
@@ -114,11 +124,16 @@ name: "child_process with dynamic command"
 description: "Detects child_process exec/spawn with variable or concatenated commands"
 severity: critical
 category: process_spawn
-pattern: "(?:exec|execSync|spawn|spawnSync)\\s*\\(\\s*(?:[a-zA-Z_$][a-zA-Z0-9_$]*|`|['\"]\\s*\\+)"
+pattern: "child_process['\")\\]]\\s*\\.\\s*(?:exec|execSync|spawn|spawnSync|execFile|fork)\\s*\\("
 file_pattern: "*.js"
 exclude_paths:
   - "node_modules/"
   - "test/"
+  - "dist/"
+  - "build/"
+  - "esm/"
+  - "cjs/"
+  - "umd/"
 "#,
         // 4. curl/wget piped to shell
         r#"
@@ -130,6 +145,11 @@ category: process_spawn
 pattern: "(?:curl|wget)\\s+[^|]*\\|\\s*(?:sh|bash|node|python)"
 exclude_paths:
   - "node_modules/"
+  - "dist/"
+  - "build/"
+  - "esm/"
+  - "cjs/"
+  - "umd/"
 "#,
         // 5. process.env bulk access
         r#"
@@ -143,6 +163,11 @@ file_pattern: "*.js"
 exclude_paths:
   - "node_modules/"
   - "test/"
+  - "dist/"
+  - "build/"
+  - "esm/"
+  - "cjs/"
+  - "umd/"
 "#,
         // 6. fs.readFile on sensitive paths
         r#"
@@ -156,6 +181,11 @@ file_pattern: "*.js"
 exclude_paths:
   - "node_modules/"
   - "test/"
+  - "dist/"
+  - "build/"
+  - "esm/"
+  - "cjs/"
+  - "umd/"
 "#,
         // 7. Crypto mining indicators
         r#"
@@ -167,6 +197,11 @@ category: suspicious
 pattern: "(?:stratum\\+tcp://|cryptonight|coinhive|minergate|xmrig|monero\\.crypto-pool)"
 exclude_paths:
   - "node_modules/"
+  - "dist/"
+  - "build/"
+  - "esm/"
+  - "cjs/"
+  - "umd/"
 "#,
         // 8. Reverse shell patterns
         r#"
@@ -180,6 +215,11 @@ file_pattern: "*.js"
 exclude_paths:
   - "node_modules/"
   - "test/"
+  - "dist/"
+  - "build/"
+  - "esm/"
+  - "cjs/"
+  - "umd/"
 "#,
         // 9. Data exfiltration — encode + send
         r#"
@@ -193,6 +233,11 @@ file_pattern: "*.js"
 exclude_paths:
   - "node_modules/"
   - "test/"
+  - "dist/"
+  - "build/"
+  - "esm/"
+  - "cjs/"
+  - "umd/"
 "#,
         // 10. Prototype pollution
         r#"
@@ -206,6 +251,11 @@ file_pattern: "*.js"
 exclude_paths:
   - "node_modules/"
   - "test/"
+  - "dist/"
+  - "build/"
+  - "esm/"
+  - "cjs/"
+  - "umd/"
   - "*.min.js"
 "#,
     ];

@@ -49,9 +49,22 @@ impl Analyzer for AstAnalyzer {
                 continue;
             }
 
-            // Skip dist/ and bundle/ directories
+            // Skip dist/bundle/build directories — build outputs cause false positives
             let path_str = path.display().to_string();
-            if path_str.contains("/dist/") || path_str.contains("/bundle/") {
+            let path_lower = path_str.to_lowercase();
+            if path_lower.contains("/dist/")
+                || path_lower.contains("/bundle/")
+                || path_lower.contains("/build/")
+                || path_lower.contains("/umd/")
+                || path_lower.contains("/cjs/")
+                || path_lower.contains("/esm/")
+                || path_lower.starts_with("dist/")
+                || path_lower.starts_with("bundle/")
+                || path_lower.starts_with("build/")
+                || path_lower.starts_with("umd/")
+                || path_lower.starts_with("cjs/")
+                || path_lower.starts_with("esm/")
+            {
                 continue;
             }
 

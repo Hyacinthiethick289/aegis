@@ -8,7 +8,21 @@ use crate::types::{Finding, FindingCategory, Severity};
 use super::{truncate, Analyzer};
 
 /// Scripts in package.json that run during install lifecycle.
-const LIFECYCLE_SCRIPTS: &[&str] = &["preinstall", "postinstall", "preuninstall", "prepare"];
+/// "prepare" is excluded — it runs on `npm publish` and `git install`, not on `npm install`.
+const LIFECYCLE_SCRIPTS: &[&str] = &["preinstall", "postinstall", "preuninstall"];
+
+/// Common development-only scripts that are safe and expected.
+const SAFE_SCRIPT_VALUES: &[&str] = &[
+    "husky",
+    "husky install",
+    "lint-staged",
+    "patch-package",
+    "ngcc",
+    "prebuild-install",
+    "node-gyp rebuild",
+    "tsc",
+    "tsc --build",
+];
 
 fn re_dangerous_cmd() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
@@ -46,6 +60,15 @@ impl Analyzer for InstallScriptAnalyzer {
                 None => continue,
             };
 
+            // Skip known safe/development scripts
+            let trimmed_value = script_value.trim();
+            if SAFE_SCRIPT_VALUES
+                .iter()
+                .any(|s| trimmed_value.eq_ignore_ascii_case(s))
+            {
+                continue;
+            }
+
             // CRITICAL: script contains dangerous commands / URLs
             if dangerous.is_match(script_value) {
                 findings.push(Finding {
@@ -61,13 +84,13 @@ impl Analyzer for InstallScriptAnalyzer {
                     snippet: Some(truncate(script_value, 100)),
                 });
             } else {
-                // HIGH: any install script at all is unusual
+                // MEDIUM (not HIGH): install script present but not obviously dangerous
                 findings.push(Finding {
-                    severity: Severity::High,
+                    severity: Severity::Medium,
                     category: FindingCategory::InstallScript,
                     title: format!("Install lifecycle script \"{}\" present", script_name),
                     description: format!(
-                        "The package defines a \"{}\" script. Legitimate packages rarely need install scripts.",
+                        "The package defines a \"{}\" script. Review its contents.",
                         script_name
                     ),
                     file: Some("package.json".to_string()),

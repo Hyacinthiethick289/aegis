@@ -87,9 +87,24 @@ impl Analyzer for ObfuscationAnalyzer {
                 continue;
             }
 
-            // Skip dist/bundle directories for entropy/long-line checks
+            // Skip dist/bundle directories entirely — build outputs always look obfuscated
             let path_str = path.display().to_string();
-            let is_dist = path_str.contains("/dist/") || path_str.contains("/bundle/");
+            let path_lower = path_str.to_lowercase();
+            let is_dist = path_lower.contains("/dist/")
+                || path_lower.contains("/bundle/")
+                || path_lower.contains("/build/")
+                || path_lower.contains("/umd/")
+                || path_lower.contains("/cjs/")
+                || path_lower.contains("/esm/")
+                || path_lower.starts_with("dist/")
+                || path_lower.starts_with("bundle/")
+                || path_lower.starts_with("build/")
+                || path_lower.starts_with("umd/")
+                || path_lower.starts_with("cjs/")
+                || path_lower.starts_with("esm/");
+            if is_dist {
+                continue;
+            }
 
             for (line_num, line) in content.lines().enumerate() {
                 let ln = line_num + 1;
@@ -129,8 +144,8 @@ impl Analyzer for ObfuscationAnalyzer {
                     }
                 }
 
-                // HIGH: high entropy lines (only for lines > 100 chars, skip dist/)
-                if !is_dist && line.len() > 100 {
+                // HIGH: high entropy lines (only for lines > 100 chars)
+                if line.len() > 100 {
                     let entropy = shannon_entropy(line);
                     if entropy > 5.5 {
                         findings.push(Finding {
@@ -163,8 +178,8 @@ impl Analyzer for ObfuscationAnalyzer {
                     });
                 }
 
-                // LOW: suspiciously long lines in non-minified, non-dist files
-                if !is_dist && line.len() > 500 {
+                // LOW: suspiciously long lines in source files
+                if line.len() > 500 {
                     findings.push(Finding {
                         severity: Severity::Low,
                         category: FindingCategory::Obfuscation,

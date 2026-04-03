@@ -68,13 +68,22 @@ impl RulesEngine {
     /// Check whether a file path should be excluded by the rule's
     /// `exclude_paths` list.
     fn is_excluded(path: &str, exclude_paths: &[String]) -> bool {
+        let path_lower = path.to_lowercase();
         exclude_paths.iter().any(|excl| {
-            // Support both substring matching and simple glob.
-            if let Ok(pat) = glob::Pattern::new(excl) {
-                pat.matches(path)
-            } else {
-                path.contains(excl.as_str())
+            let excl_lower = excl.to_lowercase();
+            // Direct substring/prefix check first (handles "dist/", "test/", etc.)
+            if path_lower.contains(&excl_lower) || path_lower.starts_with(&excl_lower) {
+                return true;
             }
+            // Then try glob pattern (handles "*.min.js", etc.)
+            if let Ok(pat) = glob::Pattern::new(excl) {
+                let file_name = std::path::Path::new(path)
+                    .file_name()
+                    .and_then(|n| n.to_str())
+                    .unwrap_or("");
+                return pat.matches(file_name) || pat.matches(path);
+            }
+            false
         })
     }
 

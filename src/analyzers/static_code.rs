@@ -65,7 +65,8 @@ fn patterns() -> &'static [Pattern] {
             Regex::new(r#"Buffer\.from\s*\(.*(?:eval|Function)"#).unwrap()
         });
         RE_CHILD_PROC_EXEC.get_or_init(|| {
-            Regex::new(r#"child_process.*\.\s*(?:exec|execSync|spawn)\s*\("#).unwrap()
+            // Must have child_process require/import nearby, not just any .exec() call
+            Regex::new(r#"child_process['")\]]\s*\.\s*(?:exec|execSync|spawn|spawnSync|execFile|fork)\s*\("#).unwrap()
         });
         RE_PIPE_TO_SHELL
             .get_or_init(|| Regex::new(r#"(?:curl|wget)\s+[^\|]*\|\s*(?:bash|sh)\b"#).unwrap());
@@ -243,24 +244,62 @@ fn patterns() -> &'static [Pattern] {
 // Analyzer
 // ---------------------------------------------------------------------------
 
-/// Check if a finding is in a known HTTP library where network patterns are expected.
-fn is_http_library_pattern(path: &str, line: &str) -> bool {
-    let http_lib_paths = [
-        "adapters/xhr",
-        "adapters/http",
-        "adapters/fetch",
-        "platform/common",
-        "lib/request",
-        "lib/response",
-    ];
-    let is_http_lib = http_lib_paths.iter().any(|p| path.contains(p));
+/// Check if a line is a comment.
+fn is_comment_line(line: &str) -> bool {
+    let trimmed = line.trim_start();
+    trimmed.starts_with("//")
+        || trimmed.starts_with('*')
+        || trimmed.starts_with("/*")
+        || trimmed.starts_with('#')
+}
 
-    // Also skip lines that are just comments about XHR/fetch
-    let is_comment = line.trim_start().starts_with("//")
-        || line.trim_start().starts_with("*")
-        || line.trim_start().starts_with("/*");
+/// Check if a pattern match is expected/benign in context.
+fn is_expected_pattern(path: &str, line: &str, pat: &Pattern) -> bool {
+    // process.env used for config (single access per line, not harvesting)
+    // The ENV_HARVEST pattern requires 2+ accesses on the same line.
+    // But also skip if the file is clearly a config/proxy/env utility.
+    if matches!(pat.category, FindingCategory::EnvAccess) {
+        let config_paths = [
+            "config", "env", "proxy", "defaults", "helpers", "utils", "settings",
+        ];
+        if config_paths.iter().any(|p| path.to_lowercase().contains(p)) {
+            return true;
+        }
+    }
 
-    is_http_lib || is_comment
+    // XMLHttpRequest/fetch in adapter/transport files is expected
+    if matches!(pat.category, FindingCategory::NetworkAccess)
+        && matches!(pat.severity, Severity::Low)
+    {
+        let network_paths = [
+            "adapters/",
+            "transport/",
+            "request",
+            "http",
+            "fetch",
+            "xhr",
+            "client",
+        ];
+        if network_paths
+            .iter()
+            .any(|p| path.to_lowercase().contains(p))
+        {
+            return true;
+        }
+    }
+
+    // fs.readFile/writeFile in build/test/scripts is expected
+    if matches!(pat.category, FindingCategory::FileSystemAccess)
+        && matches!(pat.severity, Severity::Low)
+    {
+        let fs_paths = ["scripts/", "test/", "tests/", "__tests__/", "build/"];
+        if fs_paths.iter().any(|p| path.contains(p)) {
+            return true;
+        }
+    }
+
+    _ = line; // suppress unused warning
+    false
 }
 
 /// Static code analysis for dangerous patterns (eval, child_process, etc.).
@@ -288,23 +327,37 @@ impl Analyzer for StaticCodeAnalyzer {
                 continue;
             }
 
-            // Skip dist/bundle directories for LOW severity patterns
             let path_str = path.display().to_string();
-            let is_dist = path_str.contains("/dist/") || path_str.contains("/bundle/");
+            // Skip dist/bundle directories entirely — these are build outputs
+            // and produce massive false positives (XHR, fetch, process.env, etc.)
+            let path_lower = path_str.to_lowercase();
+            let is_dist = path_lower.contains("/dist/")
+                || path_lower.contains("/bundle/")
+                || path_lower.contains("/build/")
+                || path_lower.contains("/umd/")
+                || path_lower.contains("/cjs/")
+                || path_lower.contains("/esm/")
+                || path_lower.starts_with("dist/")
+                || path_lower.starts_with("bundle/")
+                || path_lower.starts_with("build/")
+                || path_lower.starts_with("umd/")
+                || path_lower.starts_with("cjs/")
+                || path_lower.starts_with("esm/");
+            if is_dist {
+                continue;
+            }
 
             for (line_num, line) in content.lines().enumerate() {
                 for pat in pats {
-                    // Skip LOW patterns in dist/ directories (too noisy)
-                    if is_dist && pat.severity == Severity::Low {
-                        continue;
-                    }
-
                     let re = pat.regex.get().expect("pattern not initialised");
                     if re.is_match(line) {
-                        // Skip XHR/fetch in known HTTP libraries (axios, got, node-fetch, etc.)
-                        if matches!(pat.severity, Severity::Low)
-                            && is_http_library_pattern(&path_str, line)
-                        {
+                        // Skip comments
+                        if is_comment_line(line) {
+                            continue;
+                        }
+
+                        // Skip expected patterns in source files
+                        if is_expected_pattern(&path_str, line, pat) {
                             continue;
                         }
 
