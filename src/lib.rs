@@ -1,6 +1,10 @@
 pub mod analyzers;
 pub mod cache;
+pub mod cli;
+pub mod commands;
+pub mod ignore;
 pub mod output;
+pub mod pipeline;
 pub mod registry;
 pub mod rules;
 pub mod scoring;
