@@ -73,7 +73,7 @@ pub fn generate_sarif(reports: &[AnalysisReport]) -> Value {
             "tool": {
                 "driver": {
                     "name": "aegis-scan",
-                    "version": "0.3.0",
+                    "version": env!("CARGO_PKG_VERSION"),
                     "informationUri": "https://github.com/z8run/aegis",
                     "rules": rules
                 }
@@ -153,7 +153,7 @@ mod tests {
 
         let driver = &runs[0]["tool"]["driver"];
         assert_eq!(driver["name"], "aegis-scan");
-        assert_eq!(driver["version"], "0.3.0");
+        assert_eq!(driver["version"], env!("CARGO_PKG_VERSION"));
 
         let rules = driver["rules"].as_array().unwrap();
         assert_eq!(rules.len(), 1);

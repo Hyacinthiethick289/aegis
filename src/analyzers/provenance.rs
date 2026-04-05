@@ -225,7 +225,7 @@ impl ProvenanceAnalyzer {
         }
         let client = reqwest::Client::builder()
             .timeout(REQUEST_TIMEOUT)
-            .user_agent("aegis-cli/0.3.0")
+            .user_agent(concat!("aegis-cli/", env!("CARGO_PKG_VERSION")))
             .default_headers(headers)
             .build()
             .unwrap_or_default();

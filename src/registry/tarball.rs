@@ -15,7 +15,7 @@ pub async fn download_and_extract(tarball_url: &str, dest: &Path) -> Result<Path
     tracing::info!(url = %tarball_url, "downloading tarball");
 
     let client = reqwest::Client::builder()
-        .user_agent("aegis-cli/0.3.0")
+        .user_agent(concat!("aegis-cli/", env!("CARGO_PKG_VERSION")))
         .build()
         .context("failed to build HTTP client")?;
 
